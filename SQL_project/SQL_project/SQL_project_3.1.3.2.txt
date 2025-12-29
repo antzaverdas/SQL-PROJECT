@@ -1,0 +1,61 @@
+DELIMITER $$
+
+CREATE PROCEDURE manage_application(
+    IN employee_username_arg VARCHAR(30), 
+    IN job_id_arg INT, 
+    IN job_title_arg VARCHAR(60),
+    IN action CHAR(1),
+    OUT result TEXT
+)
+BEGIN
+    DECLARE application_exists BOOLEAN DEFAULT FALSE;
+    DECLARE application_status VARCHAR(10);
+    DECLARE assigned_evaluator VARCHAR(30);
+
+    -- Check if an application already exists for this employee and job
+    SELECT EXISTS(SELECT 1 FROM applies WHERE cand_username = employee_username_arg AND job_id = job_id_arg) INTO application_exists;
+    SELECT status INTO application_status FROM applies WHERE cand_username = employee_username_arg AND job_id = job_id_arg;
+
+    -- Get the evaluator assigned to this job
+    SELECT evaluator INTO assigned_evaluator FROM job WHERE id = job_id_arg;
+
+    IF action = 'i' THEN
+        IF application_exists THEN
+            SET result = 'An application already exists for this job and employee.';
+        ELSE
+            IF assigned_evaluator IS NULL THEN
+                SET result = 'No evaluator assigned for this job. Evaluator needs to be assigned.';
+            ELSE
+                INSERT INTO applies (cand_username, job_id, status, application_date) VALUES (employee_username_arg, job_id_arg, 'active', CURRENT_DATE);
+                SET result = 'Application created successfully.';
+            END IF;
+        END IF;
+    ELSEIF action = 'c' THEN
+        IF NOT application_exists THEN
+            SET result = 'No application exists for this job and employee.';
+        ELSEIF application_status = 'cancelled' THEN
+            SET result = 'Application already cancelled.';
+        ELSE
+            UPDATE applies SET status = 'cancelled' WHERE cand_username = employee_username_arg AND job_id = job_id_arg;
+            SET result = 'Application cancelled successfully.';
+        END IF;
+    ELSEIF action = 'a' THEN
+        IF NOT application_exists THEN
+            SET result = 'No application exists for this job and employee.';
+        ELSEIF application_status != 'cancelled' THEN
+            SET result = 'Application is not in a cancelled state.';
+        ELSE
+            UPDATE applies SET status = 'active' WHERE cand_username = employee_username_arg AND job_id = job_id_arg;
+            SET result = 'Application activated successfully.';
+        END IF;
+    ELSE
+        SET result = 'Invalid action.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+
+CALL manage_application('user1', 1, 'Job Title', 'i', @result);
+SELECT @result;

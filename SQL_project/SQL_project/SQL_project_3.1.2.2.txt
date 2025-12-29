@@ -1,0 +1,24 @@
+ALTER TABLE applies
+ADD COLUMN evaluator1_username VARCHAR(30),
+ADD COLUMN evaluator2_username VARCHAR(30),
+ADD COLUMN score1 SMALLINT,
+ADD COLUMN score2 SMALLINT,
+ADD COLUMN final_decision VARCHAR(20);
+
+-- Adding foreign key constraints
+ALTER TABLE applies
+ADD CONSTRAINT fk_applies_evaluator1
+FOREIGN KEY (evaluator1_username) REFERENCES evaluator(username);
+
+ALTER TABLE applies
+ADD CONSTRAINT fk_applies_evaluator2
+FOREIGN KEY (evaluator2_username) REFERENCES evaluator(username);
+
+-- Adding CHECK constraints (ensure your MySQL version supports this)
+ALTER TABLE applies
+ADD CONSTRAINT check_score1 CHECK (score1 BETWEEN 1 AND 20);
+
+ALTER TABLE applies
+ADD CONSTRAINT check_score2 CHECK (score2 BETWEEN 1 AND 20);
+
+

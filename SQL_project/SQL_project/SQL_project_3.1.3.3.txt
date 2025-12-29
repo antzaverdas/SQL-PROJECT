@@ -1,0 +1,70 @@
+DELIMITER $$
+
+CREATE PROCEDURE process_job_applications(IN job_id_arg INT)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE app_cand_username VARCHAR(30);
+    DECLARE app_score1 SMALLINT;
+    DECLARE app_score2 SMALLINT;
+    DECLARE evaluation_grade DECIMAL;
+    DECLARE qualification_grade DECIMAL;
+    DECLARE cur CURSOR FOR SELECT cand_username, score1, score2 FROM applies WHERE job_id = job_id_arg AND status <> 'cancelled';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO app_cand_username, app_score1, app_score2;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Check if both evaluation grades are already present
+        IF app_score1 IS NOT NULL AND app_score2 IS NOT NULL THEN
+            SET evaluation_grade = (app_score1 + app_score2) / 2.0;
+        ELSE
+            -- Call the stored procedure to calculate the evaluation grade
+            CALL get_or_calculate_evaluation_grade(NULL, app_cand_username, job_id_arg, qualification_grade);
+
+            -- Combine the existing score with the qualification grade, or use the qualification grade alone
+            IF app_score1 IS NOT NULL THEN
+                SET evaluation_grade = (app_score1 + qualification_grade) / 2.0;
+            ELSEIF app_score2 IS NOT NULL THEN
+                SET evaluation_grade = (app_score2 + qualification_grade) / 2.0;
+            ELSE
+                SET evaluation_grade = qualification_grade;
+            END IF;
+        END IF;
+
+        -- Update the final decision for the application
+        UPDATE applies
+        SET final_decision = evaluation_grade
+        WHERE cand_username = app_cand_username AND job_id = job_id_arg;
+    END LOOP;
+
+    CLOSE cur;
+END$$
+
+DELIMITER ;
+
+
+
+
+
+--TEST process_job_applications()--
+-- Insert a new job, letting the database generate the job_id
+INSERT INTO job (title, start_date, salary, position, edra, evaluator, announce_date, submission_date)
+VALUES ('New Job Title', CURRENT_DATE + INTERVAL 20 DAY, 60000, 'New Position', 'New Edra', 'user1', CURRENT_DATE, CURRENT_DATE);
+
+
+-- Insert into applies table
+INSERT IGNORE INTO applies (cand_username, job_id, status, application_date, score1, score2)
+VALUES 
+('user2', 3, 'active', CURRENT_DATE - INTERVAL 10 DAY, 15, NULL),
+('user3', 3, 'active', CURRENT_DATE - INTERVAL 10 DAY, NULL, NULL),
+('user4', 3, 'active', CURRENT_DATE - INTERVAL 10 DAY, NULL, NULL);
+
+CALL process_job_applications(3);
+
+-- Check the results for the new job_id
+SELECT * FROM applies WHERE job_id = 3;

@@ -1,0 +1,52 @@
+--Procedure (a)
+DELIMITER $$
+
+CREATE PROCEDURE get_applications_in_grade_range(
+    IN min_grade INT, 
+    IN max_grade INT, 
+    OUT result TEXT
+)
+BEGIN
+    SELECT GROUP_CONCAT(CONCAT(employee_username, ':', job_id) SEPARATOR ';') 
+    INTO result
+    FROM application_history
+    WHERE evaluation_grade BETWEEN min_grade AND max_grade;
+END$$
+
+DELIMITER ;
+
+
+
+--Procedure(b)
+DELIMITER $$
+
+CREATE PROCEDURE get_applications_by_evaluator(
+    IN evaluator_username_arg VARCHAR(30),
+    OUT result TEXT
+)
+BEGIN
+    SELECT GROUP_CONCAT(CONCAT(employee_username, ':', job_id) SEPARATOR ';') 
+    INTO result
+    FROM application_history
+    WHERE evaluator1_username = evaluator_username_arg OR evaluator2_username = evaluator_username_arg;
+END$$
+
+DELIMITER ;
+
+
+
+--TEST code 
+CALL get_applications_in_grade_range(7, 12, @result);
+SELECT @result;
+
+CALL get_applications_by_evaluator('user1', @result);
+SELECT @result;
+
+EXPLAIN SELECT * FROM application_history WHERE evaluation_grade BETWEEN 7 AND 12;
+EXPLAIN SELECT * FROM application_history WHERE evaluator1_username = 'user1';
+
+
+
+DROP INDEX idx_evaluator_username ON application_history;
+EXPLAIN SELECT * FROM application_history WHERE evaluator1_username = 'user1';
+

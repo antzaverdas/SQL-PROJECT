@@ -1,0 +1,113 @@
+INSERT INTO user (username, password, name, lastname, reg_date, email) VALUES
+('user1', 'password1', 'Name1', 'LastName1', '2023-01-01 00:00:00', 'user1@example.com'),
+('user2', 'password2', 'Name2', 'LastName2', '2023-01-02 00:00:00', 'user2@example.com'),
+('user3', 'password3', 'Name3', 'LastName3', '2023-01-03 00:00:00', 'user3@example.com'),
+('user4', 'password4', 'Name4', 'LastName4', '2023-01-04 00:00:00', 'user4@example.com'),
+('user5', 'password5', 'Name5', 'LastName5', '2023-01-05 00:00:00', 'user5@example.com'),
+('user6', 'password6', 'Name6', 'LastName6', '2023-01-06 00:00:00', 'user6@example.com'),
+('user7', 'password7', 'Name7', 'LastName7', '2023-01-07 00:00:00', 'user7@example.com'),
+('user8', 'password8', 'Name8', 'LastName8', '2023-01-08 00:00:00', 'user8@example.com'),
+('user9', 'password9', 'Name9', 'LastName9', '2023-01-09 00:00:00', 'user9@example.com'),
+('user10', 'password10', 'Name10', 'LastName10', '2023-01-10 00:00:00', 'user10@example.com'),
+('user11', 'password11', 'Name11', 'LastName11', '2023-01-11 00:00:00', 'user11@example.com'),
+('user12', 'password12', 'Name12', 'LastName12', '2023-01-12 00:00:00', 'user12@example.com');
+
+-- Insert into employee table
+INSERT INTO employee (username, bio, sitatikes, certificates) VALUES
+('user1', 'Biography for User1', 'Sitatikes1', 'Certificate1'),
+('user2', 'Biography for User2', 'Sitatikes2', 'Certificate2'),
+('user3', 'Biography for User3', 'Sitatikes3', 'Certificate3'),
+('user4', 'Biography for User4', 'Sitatikes4', 'Certificate4'),
+('user5', 'Biography for User5', 'Sitatikes5', 'Certificate5'),
+('user6', 'Biography for User6', 'Sitatikes6', 'Certificate6');
+
+-- Insert into etaireia table
+INSERT INTO etaireia (AFM, DOY, name, tel, street, num, city, country) VALUES
+('123456789', 'DOY1', 'Etaireia1', '2101234567', 'Street1', 1, 'City1', 'Country1'),
+('987654321', 'DOY2', 'Etaireia2', '2107654321', 'Street2', 2, 'City2', 'Country2'),
+('555666777', 'DOY3', 'Etaireia3', '2105556677', 'Street3', 3, 'City3', 'Country3');
+
+-- Insert into evaluator table
+INSERT INTO evaluator (username, exp_years, firm) VALUES
+('user1', 5, '123456789'),
+('user2', 7, '987654321'),
+('user3', 3, '555666777'),
+('user4', 8, '123456789'),
+('user5', 10, '987654321'),
+('user6', 2, '555666777');
+
+-- Insert into job table
+INSERT INTO job (title, start_date, salary, position, edra, evaluator, announce_date, submission_date) VALUES
+('Job Title 1', '2024-01-01', 50000, 'Position 1', 'Location 1', 'user1', '2023-11-01', '2023-11-15'),
+('Job Title 2', '2024-02-01', 55000, 'Position 2', 'Location 2', 'user2', '2023-12-01', '2023-12-15'),
+('Job Title 3', '2024-03-01', 60000, 'Position 3', 'Location 3', 'user3', '2024-01-01', '2024-01-15'),
+('Job Title 4', '2024-04-01', 65000, 'Position 4', 'Location 4', 'user4', '2024-02-01', '2024-02-15'),
+('Job Title 5', '2024-05-01', 70000, 'Position 5', 'Location 5', 'user5', '2024-03-01', '2024-03-15'),
+('Job Title 6', '2024-06-01', 75000, 'Position 6', 'Location 6', 'user6', '2024-04-01', '2024-04-15');
+
+-- Insert into subject table
+INSERT INTO subject (title, descr, belongs_to) VALUES
+('Subject1', 'Description of Subject 1', NULL),
+('Subject2', 'Description of Subject 2', NULL),
+('Subject3', 'Description of Subject 3', 'Subject1'),
+('Subject4', 'Description of Subject 4', 'Subject1'),
+('Subject5', 'Description of Subject 5', 'Subject2'),
+('Subject6', 'Description of Subject 6', 'Subject2'),
+('Subject7', 'Description of Subject 7', 'Subject3'),
+('Subject8', 'Description of Subject 8', 'Subject4');
+
+INSERT INTO languages (employee_username, language) VALUES
+('user1', 'EN'), ('user1', 'FR'),
+('user2', 'EN'), ('user2', 'SP'), ('user2', 'GR'),
+('user3', 'EN'), ('user3', 'GE'),
+('user4', 'FR'), ('user4', 'CH');
+
+
+INSERT INTO project (candid, num, descr, url) VALUES
+('user1', 1, 'Project Description 1', 'http://project1.com'),
+('user1', 2, 'Project Description 2', 'http://project2.com'),
+('user2', 1, 'Project Description 3', 'http://project3.com'),
+('user3', 1, 'Project Description 4', 'http://project4.com'),
+('user4', 1, 'Project Description 5', 'http://project5.com'),
+('user4', 2, 'Project Description 6', 'http://project6.com'),
+('user5', 1, 'Project Description 7', 'http://project7.com');
+
+-- Insert into degree table
+INSERT INTO degree (titlos, idryma, bathmida, etos, grade, cand_username) VALUES
+('Computer Science', 'University A', 'BSc', 2018, 3.5, 'user1'),
+('Electrical Engineering', 'University B', 'MSc', 2019, 3.7, 'user2'),
+('Mechanical Engineering', 'University C', 'PhD', 2020, 3.8, 'user3'),
+('Information Technology', 'University A', 'BSc', 2018, 3.6, 'user4'),
+('Physics', 'University B', 'MSc', 2019, 3.9, 'user5'),
+('Mathematics', 'University C', 'PhD', 2020, 4.0, 'user6');
+
+-- Insert into has_degree table
+INSERT INTO has_degree (degr_title, degr_idryma, cand_username, etos, grade) VALUES
+('Computer Science', 'University A', 'user1', 2018, 3.5),
+('Business Administration', 'University D', 'user1', 2017, 3.4),
+('Electrical Engineering', 'University B', 'user2', 2019, 3.7),
+('Information Systems', 'University E', 'user2', 2020, 3.8),
+('Mechanical Engineering', 'University C', 'user3', 2020, 3.8),
+('Biology', 'University F', 'user3', 2018, 3.2),
+('Information Technology', 'University A', 'user4', 2018, 3.6),
+('Graphic Design', 'University G', 'user4', 2016, 3.9);
+
+-- Insert into requires table
+INSERT INTO requires (job_id, subject_title) VALUES
+(1, 'Subject1'),
+(1, 'Subject2'),
+(2, 'Subject3'),
+(2, 'Subject4'),
+(3, 'Subject5'),
+(3, 'Subject6'),
+(4, 'Subject7'),
+(4, 'Subject8');
+
+-- Insert into applies table
+INSERT INTO applies (cand_username, job_id) VALUES
+('user1', 1),
+('user2', 2),
+('user3', 3),
+('user4', 4),
+('user5', 5),
+('user6', 6);

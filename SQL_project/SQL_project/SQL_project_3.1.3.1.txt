@@ -1,0 +1,57 @@
+DELIMITER $$
+
+CREATE PROCEDURE get_or_calculate_evaluation_grade(
+    IN evaluator_username_arg VARCHAR(30), 
+    IN employee_username_arg VARCHAR(30), 
+    IN job_id_arg INT, 
+    OUT evaluation_grade_result DECIMAL
+)
+BEGIN
+    DECLARE existing_grade DECIMAL DEFAULT NULL;
+    DECLARE avg_score DECIMAL DEFAULT 0;
+    DECLARE qualification_score SMALLINT DEFAULT 0;
+    DECLARE bsc_count SMALLINT DEFAULT 0;
+    DECLARE msc_count SMALLINT DEFAULT 0;
+    DECLARE phd_count SMALLINT DEFAULT 0;
+    DECLARE languages_count SMALLINT DEFAULT 0;
+    DECLARE projects_count SMALLINT DEFAULT 0;
+    
+    -- Initialize the output variable to 0
+    SET evaluation_grade_result = 0;
+    
+    -- Check if there is an existing evaluation grade
+    SELECT score1 INTO existing_grade
+    FROM applies
+    WHERE evaluator1_username = evaluator_username_arg 
+      AND cand_username = employee_username_arg 
+      AND job_id = job_id_arg;
+    
+    IF existing_grade IS NOT NULL THEN
+        SET evaluation_grade_result = existing_grade;
+    ELSE
+        SELECT COUNT(*) INTO bsc_count FROM degree WHERE cand_username = employee_username_arg AND bathmida = 'BSc';
+        SELECT COUNT(*) INTO msc_count FROM degree WHERE cand_username = employee_username_arg AND bathmida = 'MSc';
+        SELECT COUNT(*) INTO phd_count FROM degree WHERE cand_username = employee_username_arg AND bathmida = 'PhD';
+
+        SELECT COUNT(*) INTO languages_count FROM languages WHERE employee_username = employee_username_arg;
+        SELECT COUNT(*) INTO projects_count FROM project WHERE candid = employee_username_arg;
+
+        SET qualification_score = bsc_count + msc_count + phd_count;
+
+        IF languages_count > 0 THEN
+            SET qualification_score = qualification_score + 1;
+        END IF;
+
+        SET qualification_score = qualification_score + projects_count;
+        SET avg_score = qualification_score;
+        SET evaluation_grade_result = avg_score;
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+CALL get_or_calculate_evaluation_grade('user1', 'user2', 13, @evaluation_grade_result);
+SELECT @evaluation_grade_result;
+
+

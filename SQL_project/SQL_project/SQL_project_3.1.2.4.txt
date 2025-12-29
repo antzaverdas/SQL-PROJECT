@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS dba (
+    username VARCHAR(30) PRIMARY KEY,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    FOREIGN KEY (username) REFERENCES `user`(username)
+);
+
+
+CREATE TABLE IF NOT EXISTS dba_log (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    dba_username VARCHAR(30),
+    action TEXT,
+    action_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (dba_username) REFERENCES dba(username)
+);
+
+-- Populate the DBA Table
+INSERT INTO dba (username, start_date) VALUES ('user1', '2022-01-01');
+
+-- Example of Logging an Action
+INSERT INTO dba_log (dba_username, action) VALUES ('user1', 'Performed a database backup');
+

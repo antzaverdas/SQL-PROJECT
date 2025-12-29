@@ -1,0 +1,49 @@
+CREATE TABLE IF NOT EXISTS application_history (
+    application_id INT AUTO_INCREMENT PRIMARY KEY,
+    evaluator1_username VARCHAR(30),
+    evaluator2_username VARCHAR(30),
+    employee_username VARCHAR(30),
+    job_id INT,
+    status VARCHAR(10),
+    evaluation_grade SMALLINT,
+    FOREIGN KEY (evaluator1_username) REFERENCES evaluator(username),
+    FOREIGN KEY (evaluator2_username) REFERENCES evaluator(username),
+    FOREIGN KEY (employee_username) REFERENCES employee(username),
+    FOREIGN KEY (job_id) REFERENCES job(id),
+    CHECK (status IN ('completed')),
+    CHECK (evaluation_grade BETWEEN 1 AND 20)
+);
+
+
+DELIMITER $$
+
+CREATE PROCEDURE FillApplicationHistory()
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    DECLARE random_evaluator1 VARCHAR(30);
+    DECLARE random_evaluator2 VARCHAR(30);
+    DECLARE random_employee VARCHAR(30);
+    DECLARE random_job_id INT;
+    DECLARE random_grade SMALLINT;
+
+    WHILE i <= 60000 DO
+        -- Select random usernames and job_id
+        SELECT username INTO random_evaluator1 FROM evaluator ORDER BY RAND() LIMIT 1;
+        SELECT username INTO random_evaluator2 FROM evaluator ORDER BY RAND() LIMIT 1;
+        SELECT username INTO random_employee FROM employee ORDER BY RAND() LIMIT 1;
+        SELECT id INTO random_job_id FROM job ORDER BY RAND() LIMIT 1;
+
+        -- Generate a random grade between 1 and 20
+        SET random_grade = FLOOR(RAND() * 20) + 1;
+
+        -- Insert into application_history
+        INSERT INTO application_history (evaluator1_username, evaluator2_username, employee_username, job_id, status, evaluation_grade)
+        VALUES (random_evaluator1, random_evaluator2, random_employee, random_job_id, 'completed', random_grade);
+
+        SET i = i + 1;
+    END WHILE;
+END$$
+
+DELIMITER ;
+
+CALL FillApplicationHistory();

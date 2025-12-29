@@ -1,0 +1,10 @@
+ALTER TABLE applies
+ADD COLUMN status VARCHAR(10),
+ADD COLUMN application_date DATE;
+
+ALTER TABLE applies
+ADD CONSTRAINT status_check CHECK (status IN ('active', 'completed', 'cancelled'));
+
+
+
+

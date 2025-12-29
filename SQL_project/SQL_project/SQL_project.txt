@@ -1,0 +1,268 @@
+DROP TABLE IF EXISTS has_degree, degree, requires, applies, project, languages, job, employee, user, evaluator, etaireia;
+
+CREATE TABLE IF NOT EXISTS etaireia (
+    AFM CHAR(9) PRIMARY KEY,
+    DOY VARCHAR(30),
+    name VARCHAR(35),
+    tel VARCHAR(10),
+    street VARCHAR(40),
+    num INT,
+    city VARCHAR(45),
+    country VARCHAR(15)
+);
+
+CREATE TABLE IF NOT EXISTS `user` (
+    username VARCHAR(30) PRIMARY KEY,
+    password VARCHAR(20),
+    name VARCHAR(25),
+    lastname VARCHAR(35),
+    reg_date TIMESTAMP,
+    email VARCHAR(30)
+);
+
+CREATE TABLE IF NOT EXISTS employee (
+    username VARCHAR(30) PRIMARY KEY,
+    bio TEXT,
+    sitatikes VARCHAR(35),
+    certificates VARCHAR(35),
+    FOREIGN KEY (username) REFERENCES `user`(username)
+);
+
+CREATE TABLE IF NOT EXISTS evaluator (
+    username VARCHAR(30) PRIMARY KEY,
+    exp_years SMALLINT,
+    firm CHAR(9),
+    FOREIGN KEY (username) REFERENCES `user`(username),
+    FOREIGN KEY (firm) REFERENCES etaireia(AFM)
+);
+CREATE TABLE IF NOT EXISTS degree (
+    titlos VARCHAR(150),
+    idryma VARCHAR(150),
+    bathmida ENUM('BSc', 'MSc', 'PhD'),
+    etos INT,
+    grade FLOAT,
+    cand_username VARCHAR(30),
+    PRIMARY KEY (titlos, idryma, cand_username),
+    FOREIGN KEY (cand_username) REFERENCES employee(username)
+);
+
+CREATE TABLE IF NOT EXISTS job (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(60),
+    start_date DATE,
+    salary FLOAT,
+    position VARCHAR(60),
+    edra VARCHAR(60),
+    evaluator VARCHAR(30),
+    announce_date TIMESTAMP,
+    submission_date DATE,
+    FOREIGN KEY (evaluator) REFERENCES evaluator(username)
+);
+
+CREATE TABLE IF NOT EXISTS subject (
+    title VARCHAR(36) PRIMARY KEY,
+    descr TEXT,
+    belongs_to VARCHAR(36),
+    FOREIGN KEY (belongs_to) REFERENCES subject(title)
+);
+
+CREATE TABLE IF NOT EXISTS languages (
+    employee_username VARCHAR(30),
+    language VARCHAR(10),
+    PRIMARY KEY (employee_username, language),
+    FOREIGN KEY (employee_username) REFERENCES employee(username)
+);
+
+
+CREATE TABLE IF NOT EXISTS project (
+    candid VARCHAR(30),
+    num SMALLINT,
+    descr TEXT,
+    url VARCHAR(60),
+    PRIMARY KEY (candid, num),
+    FOREIGN KEY (candid) REFERENCES employee(username)
+);
+
+CREATE TABLE IF NOT EXISTS applies (
+    cand_username VARCHAR(30),
+    job_id INT,
+    status VARCHAR(10) CHECK (status IN ('active', 'completed', 'cancelled')),
+    application_date DATE,
+    evaluator1_username VARCHAR(30),
+    evaluator2_username VARCHAR(30),
+    score1 SMALLINT CHECK (score1 BETWEEN 1 AND 20),
+    score2 SMALLINT CHECK (score2 BETWEEN 1 AND 20),
+    final_decision VARCHAR(20),
+    PRIMARY KEY (cand_username, job_id),
+    FOREIGN KEY (cand_username) REFERENCES employee(username),
+    FOREIGN KEY (job_id) REFERENCES job(id),
+    FOREIGN KEY (evaluator1_username) REFERENCES evaluator(username),
+    FOREIGN KEY (evaluator2_username) REFERENCES evaluator(username)
+);
+
+CREATE TABLE IF NOT EXISTS requires (
+    job_id INT,
+    subject_title VARCHAR(36),
+    PRIMARY KEY (job_id, subject_title),
+    FOREIGN KEY (job_id) REFERENCES job(id),
+    FOREIGN KEY (subject_title) REFERENCES subject(title)
+);
+
+CREATE TABLE IF NOT EXISTS has_degree (
+    degr_title VARCHAR(150),
+    degr_idryma VARCHAR(150),
+    cand_username VARCHAR(30),
+    etos INT,
+    grade FLOAT,
+    PRIMARY KEY (degr_title, degr_idryma, cand_username),
+    FOREIGN KEY (cand_username) REFERENCES employee(username)
+);
+
+-- Add unique constraint to degree table for the combination of titlos and idryma
+ALTER TABLE degree
+ADD UNIQUE (titlos, idryma);
+
+-- Add foreign key constraints to has_degree table referencing degree table
+ALTER TABLE has_degree
+ADD FOREIGN KEY (degr_title, degr_idryma) REFERENCES degree(titlos, idryma);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DROP TABLE IF EXISTS etaireia, languages, project, evaluator, "user", employee, job, applies, requires, subject, degree, has_degree CASCADE;
+
+-- Create ENUM type for degree_level if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'degree_level') THEN
+        CREATE TYPE degree_level AS ENUM ('BSc','MSc','PhD');
+    END IF;
+END
+$$;
+
+-- Create tables with IF NOT EXISTS to avoid errors if the tables already exist
+CREATE TABLE IF NOT EXISTS etaireia (
+    AFM char(9) PRIMARY KEY,
+    DOY varchar(30),
+    name varchar(35),
+    tel varchar(10),
+    street varchar(40),
+    num integer,
+    city varchar(45),
+    country varchar(15)
+);
+
+CREATE TABLE IF NOT EXISTS "user" (
+    username varchar(30) PRIMARY KEY,
+    password varchar(20),
+    name varchar(25),
+    lastname varchar(35),
+    reg_date timestamp,
+    email varchar(30)
+);
+
+CREATE TABLE IF NOT EXISTS employee (
+    username varchar(30) PRIMARY KEY REFERENCES "user"(username),
+    bio text,
+    sitatikes varchar(35),
+    certificates varchar(35)
+);
+
+CREATE TABLE IF NOT EXISTS evaluator (
+    username varchar(30) PRIMARY KEY REFERENCES "user"(username),
+    exp_years smallint,
+    firm char(9) REFERENCES etaireia(AFM)
+);
+
+CREATE TABLE IF NOT EXISTS job (
+    id serial PRIMARY KEY,
+    title varchar(60),
+    start_date date,
+    salary float,
+    position varchar(60),
+    edra varchar(60),
+    evaluator varchar(30) REFERENCES evaluator(username),
+    announce_date timestamp,
+    submission_date date
+);
+
+CREATE TABLE IF NOT EXISTS subject (
+    title varchar(36) PRIMARY KEY,
+    descr text,
+    belongs_to varchar(36),
+    FOREIGN KEY (belongs_to) REFERENCES subject(title)
+);
+
+
+CREATE TABLE IF NOT EXISTS degree (
+    titlos varchar(150),
+    idryma varchar(150),
+    bathmida degree_level,
+    etos integer,
+    grade float,
+    cand_username varchar(30) REFERENCES employee(username),
+    PRIMARY KEY (titlos, idryma, cand_username)
+);
+
+CREATE TABLE IF NOT EXISTS has_degree (
+    degr_title varchar(150),
+    degr_idryma varchar(150),
+    cand_username varchar(30),
+    etos integer,
+    grade float,
+    FOREIGN KEY (cand_username) REFERENCES employee(username),
+    PRIMARY KEY (degr_title, degr_idryma, cand_username)
+);
+
+CREATE TABLE IF NOT EXISTS languages (
+    candid varchar(30) REFERENCES employee(username),
+    lang text[] CHECK(lang <@ ARRAY['EN','FR','SP','GE','CH','GR'])
+);
+
+CREATE TABLE IF NOT EXISTS project (
+    candid varchar(30) REFERENCES employee(username),
+    num smallint,
+    descr text,
+    url varchar(60)
+);
+
+CREATE TABLE IF NOT EXISTS applies (
+    cand_username varchar(30),
+    job_id integer,
+    PRIMARY KEY (cand_username, job_id),
+    FOREIGN KEY (cand_username) REFERENCES employee(username),
+    FOREIGN KEY (job_id) REFERENCES job(id)
+);
+
+CREATE TABLE IF NOT EXISTS requires (
+    job_id integer,
+    subject_title varchar(36),
+    PRIMARY KEY (job_id, subject_title),
+    FOREIGN KEY (job_id) REFERENCES job(id),
+    FOREIGN KEY (subject_title) REFERENCES subject(title)
+);
+
+-- Add unique constraint to degree table for the combination of titlos and idryma
+ALTER TABLE degree
+ADD CONSTRAINT unique_degree_title_institution
+UNIQUE (titlos, idryma);
+
+-- Add foreign key constraints to has_degree table referencing degree table
+ALTER TABLE has_degree
+ADD CONSTRAINT fk_has_degree_degree_title
+FOREIGN KEY (degr_title, degr_idryma) REFERENCES degree(titlos, idryma);

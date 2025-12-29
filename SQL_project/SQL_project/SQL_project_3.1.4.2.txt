@@ -1,0 +1,52 @@
+DELIMITER $$
+
+CREATE TRIGGER check_new_application_dates
+BEFORE INSERT ON applies
+FOR EACH ROW
+BEGIN
+    DECLARE job_start DATE;
+    DECLARE active_applications INT DEFAULT 0;
+
+    SELECT start_date INTO job_start FROM job WHERE id = NEW.job_id;
+
+    IF NEW.application_date > (job_start - INTERVAL 15 DAY) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Applications must be registered up to 15 days before the job start date.';
+    END IF;
+
+    SELECT COUNT(*) INTO active_applications FROM applies 
+    WHERE cand_username = NEW.cand_username AND status = 'active';
+
+    IF active_applications >= 3 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'An employee cannot have more than three active applications.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+--TESTING FUNCTIONALITY check_new_application_dates()--
+
+--15 DAYS ERROR--
+-- Insert a sample job and employee
+INSERT INTO job (title, start_date, salary, position, edra, evaluator, announce_date, submission_date)
+VALUES ('Sample Job', '2024-02-15', 50000, 'Position', 'Edra', 'user1', CURRENT_TIMESTAMP, '2024-01-30');
+
+INSERT INTO employee (username, bio, sitatikes, certificates)
+VALUES ('user12', 'Bio', 'Sitatikes', 'Certificates');
+
+-- Insert an active application
+INSERT INTO applies (cand_username, job_id, status, application_date)
+VALUES ('user12', 1, 'active', CURRENT_DATE);
+
+-- Create additional jobs with a future start date
+INSERT INTO job (title, start_date, salary, position, edra, evaluator, announce_date, submission_date)
+VALUES ('Test Job', '2024-02-15', 50000.00, 'Test Position', 'Test Edra', 'user3', NOW(), '2024-01-10');
+
+-- Insert three applications for the same employee for the created jobs
+INSERT INTO applies (cand_username, job_id, status, application_date)
+VALUES ('user12', 2, 'active', '2024-01-01'),
+       ('user12', 3, 'active', '2024-01-02'),
+       ('user12', 4, 'active', '2024-01-03');
+
+-- Attempt to insert a fourth application, which should fail due to the trigger's conditions
+INSERT INTO applies (cand_username, job_id, status, application_date)
+VALUES ('user12', 20, 'active', '2024-01-01');

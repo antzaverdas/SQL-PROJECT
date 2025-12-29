@@ -1,0 +1,124 @@
+DELIMITER $$
+
+CREATE PROCEDURE log_dba_action(
+    IN action_table VARCHAR(64),
+    IN action_type VARCHAR(10)
+)
+BEGIN
+    INSERT INTO dba_log (dba_username, action, action_time)
+    VALUES (CURRENT_USER(), CONCAT(action_table, ' ', action_type, ' at ', CURRENT_TIMESTAMP), CURRENT_TIMESTAMP);
+END$$
+
+DELIMITER ;
+
+
+
+
+DELIMITER $$
+
+-- Trigger for INSERT on job table
+CREATE TRIGGER job_insert_log
+AFTER INSERT ON job
+FOR EACH ROW
+BEGIN
+    CALL log_dba_action('job', 'INSERT');
+END$$
+
+-- Trigger for UPDATE on job table
+CREATE TRIGGER job_update_log
+AFTER UPDATE ON job
+FOR EACH ROW
+BEGIN
+    CALL log_dba_action('job', 'UPDATE');
+END$$
+
+-- Trigger for DELETE on job table
+CREATE TRIGGER job_delete_log
+AFTER DELETE ON job
+FOR EACH ROW
+BEGIN
+    CALL log_dba_action('job', 'DELETE');
+END$$
+
+
+DELIMITER ;
+
+DELIMITER $$
+
+-- Trigger for INSERT on degree table
+CREATE TRIGGER degree_insert_log
+AFTER INSERT ON degree
+FOR EACH ROW
+BEGIN
+    CALL log_dba_action('degree', 'INSERT');
+END$$
+
+-- Trigger for UPDATE on degree table
+CREATE TRIGGER degree_update_log
+AFTER UPDATE ON degree
+FOR EACH ROW
+BEGIN
+    CALL log_dba_action('degree', 'UPDATE');
+END$$
+
+-- Trigger for DELETE on degree table
+CREATE TRIGGER degree_delete_log
+AFTER DELETE ON degree
+FOR EACH ROW
+BEGIN
+    CALL log_dba_action('degree', 'DELETE');
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+-- Trigger for INSERT on user table
+CREATE TRIGGER user_insert_log
+AFTER INSERT ON `user`
+FOR EACH ROW
+BEGIN
+    CALL log_dba_action('user', 'INSERT');
+END$$
+
+-- Trigger for UPDATE on user table
+CREATE TRIGGER user_update_log
+AFTER UPDATE ON `user`
+FOR EACH ROW
+BEGIN
+    CALL log_dba_action('user', 'UPDATE');
+END$$
+
+-- Trigger for DELETE on user table
+CREATE TRIGGER user_delete_log
+AFTER DELETE ON `user`
+FOR EACH ROW
+BEGIN
+    CALL log_dba_action('user', 'DELETE');
+END$$
+
+DELIMITER ;
+
+
+--TEST--
+
+-- Perform insert action on job
+INSERT INTO job (title, start_date, salary, position, edra, evaluator, announce_date, submission_date)
+VALUES ('Test Job', '2024-01-01', 50000, 'Developer', 'HQ', 'user5', CURRENT_TIMESTAMP, '2023-12-31');
+
+
+
+-- Degree insert (ignoring if there's a conflict)
+INSERT IGNORE INTO degree (titlos, idryma, bathmida, etos, grade, cand_username)
+VALUES ('Computer Engineering', 'Tech University', 'BSc', 2022, 3.5, 'user6');
+
+-- Show dba_log before update
+SELECT * FROM dba_log;
+
+
+-- Perform update action on degree
+UPDATE degree SET grade = 4.0 WHERE titlos = 'Computer Engineering' ;
+
+-- Show dba_log after update
+SELECT * FROM dba_log;
+
